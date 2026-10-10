@@ -2,7 +2,7 @@
 A local web application for producing printable clear-case insert ZIPs, based on the supplied sample format. These are printable products, not e-reader screen files.
 
 ## Easy start
-Install Python 3.11 or newer once. Then double-click `Start-Windows.bat` on Windows or `Start-Mac.command` on Mac. The launcher installs dependencies and opens the browser. Keep its terminal window open while using the app. If macOS does not allow the command to open, use the terminal commands below.
+Install Python 3.11 or newer once. Then double-click `Run.bat` on Windows or `Start-Mac.command` on Mac. The launcher installs dependencies and opens the browser. Keep its terminal window open while using the app. If macOS does not allow the command to open, use the terminal commands below.
 
 Choose artwork, choose a reader, and create a ZIP. The artwork filename becomes its title automatically. Open **Adjust size or details** only when you need measured dimensions, a different crop or shop details. Presets still need a plain-paper fit check.
 

@@ -37,6 +37,6 @@ No uploaded sample artwork is included in this repository. Canva artwork can be 
 ## Listing copy — no API required
 Each upload gets TITLE, TAGS and DESCRIPTION on the same page, based on the seven supplied BookishDaisy TXT examples. Known design names reuse their sample title and copy; new filenames produce editable template drafts without inventing visual details. Name your artwork descriptively, for example `pink-y2k.png`. All templates describe the current PNG/HTML ZIP format and no PDFs. Personal-use terms follow the supplied examples; review them before posting. No Canva, listing-image assets, external AI service or API key is required.
 
-Copy fields individually, copy the entire listing, or download a `design-listing.txt`. The whole-listing copy and download use your current edits. Individual or combined customer ZIP export is retained.
+Copy fields individually, copy the entire listing, or download a `design-listing.txt`. The whole-listing copy and download use your current edits. Individual ZIPs get one listing per design. A combined bundle gets one listing for the whole collection, including the design count, names and separate-folder download structure.
 
 The fixed theme follows the supplied BookishDaisy shop screenshot: lavender, deep purple, warm cream, sage and soft blue, with rounded bold headings. No banner-upload or theme setup step is required.

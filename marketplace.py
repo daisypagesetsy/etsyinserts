@@ -51,5 +51,22 @@ Message {shop} on Etsy with your reader model and measured case dimensions.'''}
     return {**copy,'source':'Template draft from your design name — review before posting'}
 
 
+def bundle_listing_copy(title, designs, shop='BookishDaisy'):
+    if not isinstance(designs,list) or not 1 <= len(designs) <= 50 or any(not isinstance(name,str) or not name.strip() for name in designs):
+        raise ValueError('A bundle listing needs between 1 and 50 design names.')
+    names=[re.sub(r'[_-]+',' ',name).strip()[:100] for name in designs]
+    display=re.sub(r'[_-]+',' ',str(title)).strip()[:100] or 'Bookish Insert Collection'
+    copy=listing_copy('Bookish Insert Collection',shop)
+    copy['title']=f'{display} | {len(names)} Printable Kindle & Kobo Inserts, Digital Bundle'[:140]
+    copy['tags']=BASE_TAGS+['kindle insert bundle','kobo insert bundle','bookish bundle','reader insert set']
+    description=copy['description']
+    intro_end=description.index('\n\nDIGITAL DOWNLOAD ONLY')
+    description=f"Refresh your reading days with {display}. This digital bundle includes {len(names)} printable reader insert designs for your clear case.\n\nINCLUDED DESIGNS\n"+'\n'.join('- '+name for name in names)+description[intro_end:]
+    description=description.replace('One ZIP containing Original-art.png, Custom-size.html, Read-me.txt and Quality-report.json.',f'One ZIP containing {len(names)} separate design folders. Each folder includes Original-art.png, Custom-size.html, Read-me.txt and Quality-report.json.')
+    description=description.replace('Open Custom-size.html and print','Open Custom-size.html inside the folder for your chosen design and print')
+    copy['description']=description;copy['source']='One listing for the entire bundle — review before posting'
+    return copy
+
+
 def listing_text(copy):
     return f"TITLE\n{copy['title']}\n\nTAGS\n{', '.join(copy['tags'])}\n\nDESCRIPTION\n{copy['description']}\n"

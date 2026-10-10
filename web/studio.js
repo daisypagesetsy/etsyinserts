@@ -34,7 +34,7 @@ ${copy.description}
 async function populateListing(result,opts){
  result.assets.replaceChildren();result.status.textContent='Preparing your listing copy…';
  try{
-  const response=await fetch('/api/listing-copy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({options:{...opts,title:result.title}})});
+  const response=await fetch('/api/listing-copy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({options:{...opts,title:result.title},package:result.designs?'bundle':'individual',designs:result.designs})});
   const data=await response.json();if(!response.ok)throw Error(data.error);
   result.status.textContent=data.source;const fields={};
   for(const [name,label] of [['title','Title'],['tags','Tags · 13 phrases'],['description','Description']]){
@@ -54,12 +54,13 @@ $('generate').onclick=async()=>{
  if(mode==='bundle'&&(selected.length>50||selected.reduce((n,item)=>n+item.file.size,0)>28*1024*1024)){$('status').textContent='A bundle supports up to 50 designs and 28 MB total source files. Use individual ZIPs for larger batches.';return}
  busy=true;update();const controls=[...document.querySelectorAll('.editor input,.editor select')];controls.forEach(control=>control.disabled=true);
  urls.forEach(URL.revokeObjectURL);urls=[];$('downloads').replaceChildren();$('result-cards').replaceChildren();
- const results=selected.map((item,i)=>resultCard(item,designTitle(item,opts,selected.length),i));
+ const results=mode==='bundle'?[resultCard(selected[0],opts.title.trim()||'Bookish Insert Collection',0)]:selected.map((item,i)=>resultCard(item,designTitle(item,opts,selected.length),i));
+ if(mode==='bundle'){results[0].designs=selected.map(item=>item.file.name.replace(/\.[^.]+$/,''));const gallery=document.createElement('div');gallery.className='bundle-previews';for(const item of selected){const img=document.createElement('img');img.src=item.url;img.alt=item.file.name;gallery.append(img)}results[0].card.querySelector('.result-header').after(gallery)}
  try{
   if(mode==='bundle'){
    $('status').textContent=`Packaging ${selected.length} designs into one bundle…`;
-   const designs=[];for(const result of results)designs.push({image:await imageData(result.item.file),title:result.title});
-   downloadLink(await exportZip('/api/collection',{items:designs,options:opts}),opts.title.trim()||'Insert collection');
+   const designs=[];for(const item of selected)designs.push({image:await imageData(item.file),title:designTitle(item,opts,selected.length)});
+   downloadLink(await exportZip('/api/collection',{items:designs,options:opts}),results[0].title,results[0].customer);
   }else{
    for(let i=0;i<results.length;i++){const result=results[i];$('status').textContent=`Packaging ${i+1} of ${results.length}: ${result.item.file.name}…`;downloadLink(await exportZip('/api/bundle',{image:await imageData(result.item.file),options:{...opts,title:result.title}}),result.title,result.customer)}
   }

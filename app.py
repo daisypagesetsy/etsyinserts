@@ -3,7 +3,7 @@ import base64, io, json, math, re, warnings, zipfile
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from PIL import Image, ImageOps
-from marketplace import listing_copy
+from marketplace import listing_copy, bundle_listing_copy
 
 ROOT = Path(__file__).parent
 LIMIT = 40 * 1024 * 1024
@@ -93,7 +93,10 @@ class Handler(BaseHTTPRequestHandler):
             request=json.loads(self.rfile.read(n))
             options=request.get('options', {})
             if self.path == '/api/listing-copy':
-                result=listing_copy(options.get('title','My insert'),str(options.get('shop','BookishDaisy'))[:100])
+                if request.get('package') == 'bundle':
+                    result=bundle_listing_copy(options.get('title','Bookish Insert Collection'),request.get('designs'),str(options.get('shop','BookishDaisy'))[:100])
+                else:
+                    result=listing_copy(options.get('title','My insert'),str(options.get('shop','BookishDaisy'))[:100])
                 self.send(200,json.dumps(result).encode(),'application/json')
                 return
             if self.path == '/api/collection':

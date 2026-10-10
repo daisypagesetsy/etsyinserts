@@ -1,5 +1,5 @@
 import unittest
-from marketplace import listing_copy, listing_text
+from marketplace import listing_copy, listing_text, bundle_listing_copy
 
 class ListingTests(unittest.TestCase):
     def test_supplied_examples_have_current_files_and_thirteen_tags(self):
@@ -18,6 +18,14 @@ class ListingTests(unittest.TestCase):
         self.assertIn('My New Design',copy['title']);self.assertEqual(len(copy['tags']),13)
         self.assertIn('Template draft',copy['source']);self.assertIn('Message My Shop',copy['description'])
         self.assertNotIn('butterfly',copy['description'].lower())
+    def test_bundle_copy_counts_and_lists_all_designs(self):
+        copy=bundle_listing_copy('Spring Bundle',['pink-y2k','green-floral'])
+        self.assertIn('2 Printable',copy['title']);self.assertEqual(len(copy['tags']),13)
+        self.assertTrue(all(len(t)<=20 for t in copy['tags']))
+        self.assertIn('2 separate design folders',copy['description'])
+        self.assertIn('- pink y2k',copy['description']);self.assertIn('- green floral',copy['description'])
+        self.assertNotIn('Print-A4.pdf',copy['description'])
+        with self.assertRaises(ValueError):bundle_listing_copy('Empty',[])
     def test_text_matches_uploaded_format(self):
         text=listing_text(listing_copy('moon-book'))
         self.assertTrue(text.startswith('TITLE\nVintage Moon'))

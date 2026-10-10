@@ -101,5 +101,15 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__=='__main__':
     import argparse
-    p=argparse.ArgumentParser(); p.add_argument('--host',default='127.0.0.1'); p.add_argument('--port',type=int,default=8000); args=p.parse_args()
-    ThreadingHTTPServer((args.host,args.port),Handler).serve_forever()
+    p=argparse.ArgumentParser(); p.add_argument('--host',default='127.0.0.1'); p.add_argument('--port',type=int,default=8000); p.add_argument('--open-browser',action='store_true'); args=p.parse_args()
+    server=ThreadingHTTPServer((args.host,args.port),Handler)
+    print(f'Insert Studio is running on http://{args.host}:{args.port}. Keep this window open; press Ctrl+C to stop.',flush=True)
+    if args.open_browser:
+        import webbrowser
+        webbrowser.open(f'http://{args.host}:{args.port}')
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()

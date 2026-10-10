@@ -99,7 +99,7 @@ class Handler(BaseHTTPRequestHandler):
             options=request.get('options', {})
             if self.path == '/api/seller-assets':
                 data=base64.b64decode(request['image'],validate=True)
-                if request.get('mode','ai') == 'ai' and request.get('provider') != 'gemini':
+                if request.get('mode','ai') == 'ai' and request.get('provider') != 'openai':
                     raise ValueError('Choose a configured AI provider in AI settings, or select Basic draft.')
                 result=seller_assets(data, options, key=request.get('ai_key',''), mode=request.get('mode','ai'))
                 self.send(200,json.dumps(result).encode(),'application/json')

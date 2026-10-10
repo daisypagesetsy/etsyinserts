@@ -28,16 +28,16 @@ class MarketplaceTests(unittest.TestCase):
         self.assertIsNone(result['copy']);self.assertIn('not connected',result['copy_error']);self.assertEqual(len(result['listing_images']),3)
         with zipfile.ZipFile(io.BytesIO(base64.b64decode(result['seller_zip']))) as z:
             self.assertIn('AI-status.txt',z.namelist());self.assertNotIn('Shop-copy.txt',z.namelist())
-    def test_gemini_receives_image_and_returns_structured_copy(self):
+    def test_openai_receives_image_and_returns_structured_copy(self):
         copy=baseline('Forest')
-        reply={'candidates':[{'finishReason':'STOP','content':{'parts':[{'text':json.dumps(copy)}]}}]}
+        reply={'choices':[{'finish_reason':'stop','message':{'content':json.dumps(copy)}}]}
         class Response(io.BytesIO):
             def __enter__(self):return self
             def __exit__(self,*args):self.close()
         def respond(request,timeout):
-            self.assertEqual(request.full_url,'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent')
-            body=json.loads(request.data);self.assertEqual(body['contents'][0]['parts'][1]['inlineData']['mimeType'],'image/png')
-            self.assertEqual(timeout,75);return Response(json.dumps(reply).encode())
+            self.assertEqual(request.full_url,'https://api.openai.com/v1/chat/completions')
+            body=json.loads(request.data);self.assertEqual(body['model'],'gpt-4.1-mini')
+            self.assertTrue(body['messages'][1]['content'][1]['image_url']['url'].startswith('data:image/png;base64,'));self.assertEqual(timeout,75);return Response(json.dumps(reply).encode())
         with patch('marketplace.urllib.request.urlopen',side_effect=respond):
             result=ai_copy(Image.open(io.BytesIO(self.art)),'Forest',{},supplied_key='test-only-key')
         self.assertEqual(result['title'],copy['title'])

@@ -11,11 +11,7 @@ function downloadLink(blob,title,target=$('downloads'),extension='zip'){const ur
 async function exportZip(route,payload){const response=await fetch(route,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!response.ok)throw Error((await response.json()).error);return response.blob()}
 $('package').onchange=update;
 
-function palette(){return Object.fromEntries(['background','accent','text'].map(key=>[key,$('theme-'+key).value]))}
-for(const key of ['background','accent','text'])$('theme-'+key).oninput=()=>{document.documentElement.style.setProperty('--brand-'+key,$('theme-'+key).value)};
-$('theme-reference').onchange=async()=>{const file=$('theme-reference').files[0];if(!file)return;if(file.size>150*1024*1024){$('theme-status').textContent='Reference ZIP must be below 150 MB.';return}const input=$('theme-reference');input.disabled=true;$('theme-status').textContent='Reading your banner…';try{const response=await fetch('/api/theme',{method:'POST',headers:{'Content-Type':'application/octet-stream'},body:file});const data=await response.json();if(!response.ok)throw Error(data.error);for(const key of ['background','accent','text']){$('theme-'+key).value=data.palette[key];document.documentElement.style.setProperty('--brand-'+key,data.palette[key])}$('brand-banner').src='data:image/png;base64,'+data.banner;$('brand-banner').hidden=false;$('theme-status').textContent=data.source+' · '+data.note}catch(error){$('theme-status').textContent=error.message}finally{input.disabled=false}};
-function decodedBlob(value,type){const bytes=Uint8Array.from(atob(value),c=>c.charCodeAt(0));return new Blob([bytes],{type})}
-async function copyText(text,button){try{await navigator.clipboard.writeText(text);button.textContent='Copied ✓'}catch{const area=document.createElement('textarea');area.value=text;document.body.append(area);area.select();const ok=document.execCommand('copy');area.remove();button.textContent=ok?'Copied ✓':'Select the text to copy'}setTimeout(()=>{button.textContent='Copy'},1800)}
+async function copyText(text,button){const label=button.textContent;try{await navigator.clipboard.writeText(text);button.textContent='Copied ✓'}catch{const area=document.createElement('textarea');area.value=text;document.body.append(area);area.select();const ok=document.execCommand('copy');area.remove();button.textContent=ok?'Copied ✓':'Select the text to copy'}setTimeout(()=>{button.textContent=label},1800)}
 function resultCard(item,title,index){
  const card=document.createElement('article');card.className='result-card';
  const header=document.createElement('div');header.className='result-header';
@@ -26,28 +22,35 @@ function resultCard(item,title,index){
  const assets=document.createElement('div');assets.className='seller-assets';card.append(header,status,customer,assets);$('result-cards').append(card);
  return {card,status,customer,assets,item,title};
 }
-async function populateAssets(result,opts,ai){
- result.assets.replaceChildren();result.status.textContent=ai.mode==='ai'?'AI is reviewing this artwork…':'Preparing basic copy and listing assets…';
+function listingText(copy){return `TITLE
+${copy.title}
+
+TAGS
+${copy.tags}
+
+DESCRIPTION
+${copy.description}
+`}
+async function populateListing(result,opts){
+ result.assets.replaceChildren();result.status.textContent='Preparing your listing copy…';
  try{
-  const response=await fetch('/api/seller-assets',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:await imageData(result.item.file),options:{...opts,title:result.title},mode:ai.mode,provider:ai.provider,ai_key:ai.key})});
+  const response=await fetch('/api/listing-copy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({options:{...opts,title:result.title}})});
   const data=await response.json();if(!response.ok)throw Error(data.error);
-  result.status.textContent=data.copy_error?data.source+': '+data.copy_error:data.source+' · review before publishing';
-  if(data.copy)for(const [name,label] of [['title','Etsy title'],['description','Description'],['tags','Tags'],['alt_text','Artwork preview alt text'],['caption','Social caption']]){
+  result.status.textContent=data.source;const fields={};
+  for(const [name,label] of [['title','Title'],['tags','Tags · 13 phrases'],['description','Description']]){
    const field=document.createElement('div');field.className='copy-field';const top=document.createElement('div');top.className='copy-label';const caption=document.createElement('label');caption.textContent=label;
-   const text=document.createElement('textarea');text.value=name==='tags'?data.copy.tags.join(', '):data.copy[name];text.rows=name==='description'?10:2;text.setAttribute('aria-label',label+' for '+result.title);
+   const text=document.createElement('textarea');text.value=name==='tags'?data.tags.join(', '):data[name];text.rows=name==='description'?15:2;text.setAttribute('aria-label',label+' for '+result.title);fields[name]=text;
    const button=document.createElement('button');button.type='button';button.textContent='Copy';button.onclick=()=>copyText(text.value,button);top.append(caption,button);field.append(top,text);result.assets.append(field);
   }
-  const note=document.createElement('p');note.className='hint';note.textContent='Canva: upload the PowerPoint below. Text and artwork are separate objects; artwork itself remains a flattened image. Check fonts/layout after import. This is not a Canva template link. Downloads contain the generated drafts; edits made in these text boxes are for copying.';result.assets.append(note);
-  const links=document.createElement('div');links.className='asset-links';result.assets.append(links);
-  downloadLink(decodedBlob(data.seller_zip,'application/zip'),result.title+' seller assets',links);
-  downloadLink(decodedBlob(data.canva_pptx,'application/vnd.openxmlformats-officedocument.presentationml.presentation'),result.title+' Canva editable',links,'pptx');
-  const gallery=document.createElement('div');gallery.className='listing-gallery';
-  for(const image of data.listing_images){const blob=decodedBlob(image.data,'image/png');const tile=document.createElement('div');const img=document.createElement('img');const url=URL.createObjectURL(blob);urls.push(url);img.src=url;img.alt=image.name+' for '+result.title;tile.append(img);downloadLink(blob,result.title+' '+image.name.replace('.png',''),tile,'png');gallery.append(tile)}result.assets.append(gallery);
- }catch(error){result.status.textContent='Seller assets need attention: '+error.message;}
- const retry=document.createElement('button');retry.type='button';retry.className='retry-assets';retry.textContent='Regenerate seller assets';retry.onclick=async()=>{retry.disabled=true;await populateAssets(result,opts,{mode:$('copy-mode').value,provider:$('ai-provider').value,key:$('ai-key').value})};result.assets.append(retry);
+  const actions=document.createElement('div');actions.className='asset-links';
+  const all=document.createElement('button');all.type='button';all.textContent='Copy all';
+  const current=()=>Object.fromEntries(Object.entries(fields).map(([key,field])=>[key,field.value]));all.onclick=()=>copyText(listingText(current()),all);
+  const download=document.createElement('button');download.type='button';download.textContent='Download listing TXT';download.onclick=()=>{const url=URL.createObjectURL(new Blob([listingText(current())],{type:'text/plain;charset=utf-8'}));urls.push(url);const a=document.createElement('a');a.href=url;a.download=(result.title.replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'insert')+'-listing.txt';a.click()};
+  actions.append(all,download);result.assets.append(actions);
+ }catch(error){result.status.textContent='Could not prepare listing copy: '+error.message;}
 }
 $('generate').onclick=async()=>{
- const opts={...options(),palette:palette()},selected=[...items],mode=$('package').value,ai={mode:$('copy-mode').value,provider:$('ai-provider').value,key:$('ai-key').value};
+ const opts=options(),selected=[...items],mode=$('package').value;
  if(mode==='bundle'&&(selected.length>50||selected.reduce((n,item)=>n+item.file.size,0)>28*1024*1024)){$('status').textContent='A bundle supports up to 50 designs and 28 MB total source files. Use individual ZIPs for larger batches.';return}
  busy=true;update();const controls=[...document.querySelectorAll('.editor input,.editor select')];controls.forEach(control=>control.disabled=true);
  urls.forEach(URL.revokeObjectURL);urls=[];$('downloads').replaceChildren();$('result-cards').replaceChildren();
@@ -60,8 +63,8 @@ $('generate').onclick=async()=>{
   }else{
    for(let i=0;i<results.length;i++){const result=results[i];$('status').textContent=`Packaging ${i+1} of ${results.length}: ${result.item.file.name}…`;downloadLink(await exportZip('/api/bundle',{image:await imageData(result.item.file),options:{...opts,title:result.title}}),result.title,result.customer)}
   }
-  for(let i=0;i<results.length;i++){$('status').textContent=`Preparing seller assets ${i+1} of ${results.length}…`;await populateAssets(results[i],opts,ai)}
-  $('status').textContent='Customer ZIPs are ready. Find each design’s shop copy and seller assets below; check any AI connection messages.';
+  for(let i=0;i<results.length;i++){$('status').textContent=`Preparing listing copy ${i+1} of ${results.length}…`;await populateListing(results[i],opts)}
+  $('status').textContent='Done. Your ZIPs and listing copy are ready below. Review the copy before posting.';
  }catch(e){$('status').textContent='Export failed: '+e.message;for(const result of results)if(result.status.textContent==='Customer ZIP pending…')result.status.textContent='Export did not finish. Retry after resolving the error.'}
  finally{controls.forEach(control=>control.disabled=false);busy=false;$('generate').disabled=false}
 };

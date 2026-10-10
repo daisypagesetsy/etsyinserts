@@ -13,7 +13,7 @@ class BundleTests(unittest.TestCase):
             self.assertFalse(quality['low_resolution'])
             for name in ['Print-A4.pdf','Print-Letter.pdf']:
                 data=z.read(name);self.assertTrue(data.startswith(b'%PDF'));self.assertIn(b'/Count 2',data)
-            selector=z.read('Custom-size.html').decode();self.assertNotIn('</script><script>alert',selector);self.assertIn('Kobo',selector);self.assertIn('PocketBook',selector);self.assertNotIn('__CONFIG__',selector)
+            selector=z.read('Custom-size.html').decode();self.assertNotIn('</script><script>alert',selector);self.assertIn('Kobo',selector);self.assertNotIn('PocketBook',selector);self.assertNotIn('Kindle 2007',selector);self.assertIn('Width · cm',selector);self.assertNotIn('__CONFIG__',selector)
     def test_crop_and_contain_have_distinct_effective_dpi(self):
         for mode,expected in [('cover',152.4),('contain',457.2)]:
             with zipfile.ZipFile(io.BytesIO(bundle(self.art,{'width':200,'height':100,'fit':mode}))) as z:

@@ -10,6 +10,8 @@ ROOT = Path(__file__).parent
 MM = 72 / 25.4
 LIMIT = 40 * 1024 * 1024
 MODELS = json.loads((ROOT / 'web/models.json').read_text())
+# A short customer-facing list; the creator's full catalogue stays available.
+CUSTOMER_MODELS = [MODELS[i] for i in (0, 2, 3, 31, 32, 33)]
 
 def dimensions(options):
     w, h, r = (float(options.get(k, v)) for k, v in [('width',108.6),('height',157.8),('radius',0)])
@@ -51,14 +53,15 @@ def bundle(data, options):
     dpi=(min if fit=='cover' else max)(iw/(w/25.4),ih/(h/25.4))
     normalized=io.BytesIO(); image.save(normalized,format='PNG')
     template=(ROOT/'web/selector.html').read_text()
-    config=dict(title=title,shop=shop,width=w,height=h,radius=r,fit=fit,models=MODELS,pixels=[iw,ih])
+    config=dict(title=title,shop=shop,width=w,height=h,radius=r,fit=fit,models=CUSTOMER_MODELS,pixels=[iw,ih])
     safe=json.dumps(config).replace('<','\\u003c')
     selector=template.replace('__CONFIG__',safe).replace('__IMAGE__',base64.b64encode(normalized.getvalue()).decode())
     readme=f'''{shop} | {title}
 PRINTABLE CLEAR-CASE INSERTS — not a file to send to an e-reader screen.
 
 Extract the ZIP. Open Custom-size.html in a desktop browser, offline.
-Select Kindle, Kobo or another reader; measure your case in millimeters.
+Choose a listed Kindle or Kobo model, or Custom size for any other reader.
+Enter your measured case dimensions in centimeters (cm).
 Sample presets are device body outlines from the supplied sample, not verified case templates.
 A4 and Letter PDFs contain artwork on page 1 and an ink-saving outline on page 2.
 Print at 100% / actual size. Disable fit-to-page, margins, headers and footers.

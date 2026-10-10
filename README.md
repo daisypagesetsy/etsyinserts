@@ -20,7 +20,7 @@ Open the app on port 8000 in your local browser. Upload PNG, JPEG or WebP files,
 ## Bundle contents
 - Original artwork, with exact uploaded bytes preserved.
 - A4 and US Letter PDFs, artwork plus outline-test pages.
-- Standalone offline HTML selector with Kindle and Kobo model names from the supplied sample, plus custom BOOX, PocketBook, Nook and other-reader options.
+- Standalone offline HTML selector with a short list: Kindle 2024, Paperwhite 2024, Colorsoft 2024, Kobo Libra Colour, Clara Colour and Clara BW. Custom size supports any other reader, with measurements in centimeters. The creator interface retains the full catalogue.
 - Printing instructions and JSON quality report.
 
 Presets are sample device body dimensions, not independently verified case templates. All dimensions remain editable. No unsupported dimensions are invented. Cropping preserves aspect ratio; contain mode retains the entire image. Effective DPI is calculated from actual source pixels; no upscaling can guarantee extra detail. PDFs embed source-resolution artwork without JPEG recompression. Original color profiles remain in the original file; browser/printer rendering may differ.

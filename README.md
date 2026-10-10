@@ -1,0 +1,28 @@
+# Insert Studio
+A local web application for producing printable clear-case insert ZIPs, based on the supplied sample format. These are printable products, not e-reader screen files.
+
+## Run
+Python 3.11+:
+
+```sh
+python -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python app.py
+```
+
+Open the app on port 8000 in your local browser. Upload PNG, JPEG or WebP files, select measured dimensions and download a ZIP per artwork. The local server processes uploads in memory. This development server is intended for local use; public hosting needs a production service with request limits and access controls.
+
+## Bundle contents
+- Original artwork, with exact uploaded bytes preserved.
+- A4 and US Letter PDFs, artwork plus outline-test pages.
+- Standalone offline HTML selector with Kindle and Kobo model names from the supplied sample, plus custom BOOX, PocketBook, Nook and other-reader options.
+- Printing instructions and JSON quality report.
+
+Presets are sample device body dimensions, not independently verified case templates. All dimensions remain editable. No unsupported dimensions are invented. Cropping preserves aspect ratio; contain mode retains the entire image. Effective DPI is calculated from actual source pixels; no upscaling can guarantee extra detail. PDFs embed source-resolution artwork without JPEG recompression. Original color profiles remain in the original file; browser/printer rendering may differ.
+
+## Validate
+```sh
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+No uploaded sample artwork is included in this repository. Canva artwork can be exported as high-resolution PNG and uploaded manually. No Canva, Sites, Etsy or GitHub publishing integration is configured.

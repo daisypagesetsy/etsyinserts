@@ -40,3 +40,6 @@ Each upload gets TITLE, TAGS and DESCRIPTION on the same page, based on the seve
 Copy fields individually, copy the entire listing, or download a `design-listing.txt`. The whole-listing copy and download use your current edits. Individual ZIPs get one listing per design. A combined bundle gets one listing for the whole collection, including the design count, names and separate-folder download structure.
 
 The fixed theme follows the supplied BookishDaisy shop screenshot: lavender, deep purple, warm cream, sage and soft blue, with rounded bold headings. No banner-upload or theme setup step is required.
+
+## Watermarked post image
+After export, download one PNG per artwork showing it inside a clear reader case held by a manicured hand, in a lavender/cream bookish scene. The reusable photo template was generated for this app; subsequent mockups are composed locally with Pillow, with no API or key. The 1254 × 1254 PNG includes repeated shop watermarks over the artwork and a digital-download/styled-mockup label. Original customer ZIP artwork remains untouched and unwatermarked. This image illustrates the design and does not prove physical device/case fit. Watermarks discourage copying but cannot prevent removal or screenshots.

@@ -4,6 +4,7 @@ from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from PIL import Image, ImageOps
 from marketplace import listing_copy, bundle_listing_copy
+from mockups import listing_mockup
 
 ROOT = Path(__file__).parent
 LIMIT = 40 * 1024 * 1024
@@ -86,12 +87,17 @@ class Handler(BaseHTTPRequestHandler):
     def send(self,status,data,mime):
         self.send_response(status); self.send_header('Content-Type',mime); self.send_header('Content-Length',str(len(data))); self.send_header('X-Content-Type-Options','nosniff'); self.end_headers(); self.wfile.write(data)
     def do_POST(self):
-        if self.path not in ('/api/bundle', '/api/collection', '/api/listing-copy'): self.send(404,b'Not found','text/plain'); return
+        if self.path not in ('/api/bundle', '/api/collection', '/api/listing-copy', '/api/mockup'): self.send(404,b'Not found','text/plain'); return
         try:
             n=int(self.headers.get('Content-Length','0'))
             if not 0<n<=LIMIT: raise ValueError('Upload request must be below 40 MB.')
             request=json.loads(self.rfile.read(n))
             options=request.get('options', {})
+            if self.path == '/api/mockup':
+                data=base64.b64decode(request['image'],validate=True)
+                result=listing_mockup(data,options)
+                self.send(200,result,'image/png')
+                return
             if self.path == '/api/listing-copy':
                 if request.get('package') == 'bundle':
                     result=bundle_listing_copy(options.get('title','Bookish Insert Collection'),request.get('designs'),str(options.get('shop','BookishDaisy'))[:100])

@@ -49,6 +49,14 @@ async function populateListing(result,opts){
   actions.append(all,download);result.assets.append(actions);
  }catch(error){result.status.textContent='Could not prepare listing copy: '+error.message;}
 }
+async function populateMockups(result,selected,opts){
+ const gallery=document.createElement('div');gallery.className='mockup-gallery';result.customer.after(gallery);
+ for(const item of selected){
+  const tile=document.createElement('div');tile.className='mockup-tile';const status=document.createElement('p');status.textContent='Creating watermarked post image…';tile.append(status);gallery.append(tile);
+  try{const response=await fetch('/api/mockup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:await imageData(item.file),options:opts})});if(!response.ok)throw Error((await response.json()).error);const blob=await response.blob(),url=URL.createObjectURL(blob);urls.push(url);const image=document.createElement('img');image.src=url;image.alt='Watermarked hand-held reader mockup for '+item.file.name;status.textContent=item.file.name.replace(/\.[^.]+$/,'');tile.append(image);downloadLink(blob,status.textContent+' post image',tile,'png')}
+  catch(error){status.textContent='Post image unavailable: '+error.message}
+ }
+}
 $('generate').onclick=async()=>{
  const opts=options(),selected=[...items],mode=$('package').value;
  if(mode==='bundle'&&(selected.length>50||selected.reduce((n,item)=>n+item.file.size,0)>28*1024*1024)){$('status').textContent='A bundle supports up to 50 designs and 28 MB total source files. Use individual ZIPs for larger batches.';return}
@@ -64,8 +72,8 @@ $('generate').onclick=async()=>{
   }else{
    for(let i=0;i<results.length;i++){const result=results[i];$('status').textContent=`Packaging ${i+1} of ${results.length}: ${result.item.file.name}…`;downloadLink(await exportZip('/api/bundle',{image:await imageData(result.item.file),options:{...opts,title:result.title}}),result.title,result.customer)}
   }
-  for(let i=0;i<results.length;i++){$('status').textContent=`Preparing listing copy ${i+1} of ${results.length}…`;await populateListing(results[i],opts)}
-  $('status').textContent='Done. Your ZIPs and listing copy are ready below. Review the copy before posting.';
+  for(let i=0;i<results.length;i++){$('status').textContent=`Preparing listing copy ${i+1} of ${results.length}…`;await populateListing(results[i],opts);await populateMockups(results[i],mode==='bundle'?selected:[results[i].item],opts)}
+  $('status').textContent='Done. Your ZIPs, listing copy and watermarked post images are ready below. Review the copy before posting.';
  }catch(e){$('status').textContent='Export failed: '+e.message;for(const result of results)if(result.status.textContent==='Customer ZIP pending…')result.status.textContent='Export did not finish. Retry after resolving the error.'}
  finally{controls.forEach(control=>control.disabled=false);busy=false;$('generate').disabled=false}
 };

@@ -20,7 +20,7 @@ Open the app on port 8000 in your local browser. Upload PNG, JPEG or WebP files,
 ## Bundle contents
 - Original-art.png: PNG uploads are preserved byte for byte; JPEG/WebP files are converted to PNG at their original resolution.
 - No pre-generated PDFs. Print artwork and outline tests from the offline HTML selector.
-- Standalone offline HTML selector with a short list: Kindle 2024, Paperwhite 2024, Colorsoft 2024, Kobo Libra Colour, Clara Colour and Clara BW. Custom size supports any other reader, with measurements in centimeters. The creator interface retains the full catalogue.
+- Standalone offline HTML selector with a short list: Kindle 2024, Paperwhite 2024, Colorsoft 2024, Kobo Libra Colour, Clara Colour and Clara BW. Custom size supports any other reader, with measurements in centimeters. The creator page uses the same short list and centimeter measurements.
 - Printing instructions and JSON quality report.
 
 Presets are sample device body dimensions, not independently verified case templates. All dimensions remain editable. No unsupported dimensions are invented. Cropping preserves aspect ratio; contain mode retains the entire image. Effective DPI is calculated from actual source pixels; no upscaling can guarantee extra detail. Artwork stays at source resolution without additional lossy compression. PNG originals retain their metadata and converted images retain the source ICC profile when present; browser/printer rendering may differ.

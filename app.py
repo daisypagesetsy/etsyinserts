@@ -7,8 +7,8 @@ from PIL import Image, ImageOps
 ROOT = Path(__file__).parent
 LIMIT = 40 * 1024 * 1024
 MODELS = json.loads((ROOT / 'web/models.json').read_text())
-# A short customer-facing list; the creator's full catalogue stays available.
-CUSTOMER_MODELS = [MODELS[i] for i in (0, 2, 3, 31, 32, 33)]
+# The app and exported HTML share the same short reader list.
+CUSTOMER_MODELS = MODELS
 
 def dimensions(options):
     w, h, r = (float(options.get(k, v)) for k, v in [('width',108.6),('height',157.8),('radius',0)])
